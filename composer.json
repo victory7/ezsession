@@ -1,0 +1,27 @@
+{
+    "name": "apb/ezsession",
+    "description": "ezsession is a versatile PHP session handler designed to provide seamless session management by combining the strengths of relational databases (MySQL), key-value stores (Redis), and JWT tokens. It offers developers flexible, secure, and scalable session storage, making it ideal for applications requiring high-performance, distributed, and stateless authentication systems. With ezsession, you can customize your session storage strategy to suit a variety of use cases while ensuring enhanced security and simplified management.",
+    "type": "library",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "EzSession\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Ali Pourbazargan",
+            "email": "ali.poorbazargan@gmail.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require-dev": {
+        "phpunit/phpunit": "^5.5",
+        "squizlabs/php_codesniffer": "^3.10"
+    },
+    "require": {
+        "firebase/php-jwt": "^6.10",
+        "predis/predis": "v2.x-dev",
+        "ramsey/uuid": "^4.2"
+    }
+}

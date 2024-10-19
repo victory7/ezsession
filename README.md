@@ -1,11 +1,11 @@
-# ezsession
+# ezsession - Write & Read On-Demand with Easy JWT Access
 
-`ezsession` is a PHP session management library that provides a powerful and flexible way to handle sessions using multiple backends like Redis, MySQL, and JWT tokens. It aims to make session handling easier, more secure, and highly scalable.
+`ezsession` is a PHP session management library focused on an on-demand write and read strategy to optimize session data handling. It efficiently manages sessions using in-memory cache (e.g., Redis), permanent storage (e.g., MySQL), and JWT tokens, minimizing unnecessary storage queries and providing easy access to JWT for custom data handling. This approach ensures that session data is only written when required, significantly reducing storage operations and improving overall performance.
 
 ## Features
 
-- **Multi-Backend Support**: Uses Redis for caching, MySQL for persistent storage, and JWT for stateless session management.
-- **Custom Session Handler**: Implements `SessionHandlerInterface` for custom session handling.
+- **Write-On-Demand**: Data is only written to storage when necessary, reducing the number of storage operations.
+- **Flexible Backend Storage**: Uses Redis, memcached, APCu, ... for caching, SQLight, MySQL, Postgres, MongoDB, ... for persistent storage, and JWT for stateless session management.
 - **Easy Integration**: Plug-and-play session management for PHP applications.
 - **Scalable & Secure**: Optimizes read and write operations to ensure data persistence and secure session management.
 
@@ -20,7 +20,7 @@
 You can install `ezsession` using Composer. Simply run:
 
 ```sh
-composer require yourusername/ezsession
+composer require victory7/ezsession
 ```
 
 Then, include the autoloader in your script:
@@ -66,42 +66,41 @@ $_SESSION['user_id'] = 123;
 $_SESSION['username'] = 'john_doe';
 ```
 
-### Read and Write Strategy
-`ezsession` uses a combination of Redis and MySQL to optimize read and write performance:
-- **Writes**: Critical data is written to both Redis and MySQL to ensure persistence.
-- **Reads**: Data is primarily read from Redis for faster access, with fallback to MySQL if needed.
-- **JWT**: For session identification, JWT tokens can be generated to enable stateless session management.
+### How It Works
 
-## Methods
+`ezsession` handles session data efficiently by using a combination of JWT tokens, Redis, and MySQL to reduce unnecessary storage operations:
 
-### Create JWT Token
-Generate a new JWT token for session identification:
+1. **Session Initialization**: On the first request, `ezsession` generates a session ID using a UUID and issues a JWT token signed with your application secret key. This token is returned as a session cookie (with the name defined in the configuration).
+
+2. **Subsequent Requests**: For the rest of the requests, the session token is retrieved either via the same cookie or from the `Authorization` Bearer header. After validation, `ezsession` checks the `"stored"` flag in the JWT:
+   - If the `"stored"` flag is `false`, it means there is no data in the cache or permanent storage, so the JWT value is returned to `$_SESSION` and is accessible via `$_SESSION['jwt']`.
+   - If nothing has been written to the session, `ezsession` does not write anything to cache or database and does not perform any queries.
+
+3. **Writing to Session**: When something is written to the session (e.g., `$_SESSION['name'] = 'John';`), `ezsession` stores this data in both Redis and MySQL, updates the `"stored"` flag to `true`, and generates a new JWT token. This updated token is then returned to the client, replacing the previous token automatically.
+
+4. **Data Retrieval**: When the `"stored"` flag is `true`, `ezsession` first checks Redis for the data:
+   - If the data is found in Redis, it is returned.
+   - If not, `ezsession` queries MySQL, and if the data is found, it caches it in Redis for future requests.
+
+5. **Unset Session Values**: If all session values are unset, the `"stored"` flag is set back to `false`, and requests are handled purely through the JWT without accessing cache or database.
+
+### Working with JWT Data
+
+A key feature of `ezsession` is the ability to add, modify, or delete custom data in the JWT token directly:
+
+- Access the JWT data using `$_SESSION['jwt']`. For example, you can add a `user_id` to the JWT like this:
 
 ```php
-$token = $sessionHandler->createJWT(['user_id' => 123, 'username' => 'john_doe']);
+$_SESSION['jwt']['user_id'] = 'aaBBcc1212';
 ```
 
-### Save to Cache and MySQL
-Save data directly to Redis or MySQL:
+- Modifying the JWT in this way forces `ezsession` to regenerate the token and send it back through subsequent requests, minimizing session storage queries.
+
+### Example Usage
 
 ```php
-$sessionHandler->saveToCache('user_id', 123);
-$sessionHandler->saveToDatabase('username', 'john_doe');
-```
-
-### Retrieve Data
-Retrieve data from Redis or MySQL:
-
-```php
-$userId = $sessionHandler->getFromCache('user_id');
-$username = $sessionHandler->getFromDatabase('username');
-```
-
-### Decode JWT Token
-Decode and validate a JWT token to retrieve session information:
-
-```php
-$data = $sessionHandler->decodeJWT($token);
+// Adding custom data to JWT
+$_SESSION['jwt']['role'] = 'admin';
 ```
 
 ## Contributing
@@ -114,7 +113,7 @@ Contributions are welcome! Feel free to fork this repository, make your changes,
 
 ## Support
 
-If you encounter any issues or have questions, please open an issue on GitHub or contact me at [your.email@example.com](mailto:your.email@example.com).
+If you encounter any issues or have questions, please open an issue on GitHub or contact me at [ali.poorbazargan@gmail.com](mailto:ali.poorbazargan@gmail.com).
 
 ## Future Improvements
 
