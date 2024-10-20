@@ -1,5 +1,5 @@
 {
-    "name": "apb/ezsession",
+    "name": "victory7/ezsession",
     "description": "ezsession is a versatile PHP session handler designed to provide seamless session management by combining the strengths of relational databases (MySQL), key-value stores (Redis), and JWT tokens. It offers developers flexible, secure, and scalable session storage, making it ideal for applications requiring high-performance, distributed, and stateless authentication systems. With ezsession, you can customize your session storage strategy to suit a variety of use cases while ensuring enhanced security and simplified management.",
     "type": "library",
     "license": "MIT",
