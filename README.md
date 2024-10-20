@@ -1,4 +1,4 @@
-# ezsession - Write & Read On-Demand with Easy JWT Access
+# EzSession - Standalone by JWT, Write & Read On-Demand
 
 `ezsession` is a PHP session management library focused on an on-demand write and read strategy to optimize session data handling. It efficiently manages sessions using in-memory cache (e.g., Redis), permanent storage (e.g., MySQL), and JWT tokens, minimizing unnecessary storage queries and providing easy access to JWT for custom data handling. This approach ensures that session data is only written when required, significantly reducing storage operations and improving overall performance.
 
