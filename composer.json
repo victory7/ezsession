@@ -8,6 +8,9 @@
             "EzSession\\": "src/"
         }
     },
+    "autoload-files": [
+        "src/functions.php"
+    ],
     "authors": [
         {
             "name": "Ali Pourbazargan",

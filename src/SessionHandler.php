@@ -1,10 +1,16 @@
 <?php
 namespace EzSession;
-require __DIR__ . '/../vendor/autoload.php';
-require __DIR__ . '/drivers/mysql.php';
-require __DIR__ . '/drivers/redis.php';
-require __DIR__ . '/drivers/jwt.php';
-require_once __DIR__ . '/functions.php';
+
+// require __DIR__ . '/../vendor/autoload.php';
+// require __DIR__ . '/drivers/mysql.php';
+// require __DIR__ . '/drivers/redis.php';
+// require __DIR__ . '/drivers/jwt.php';
+// require_once __DIR__ . '/functions.php';
+
+use EzSession\Drivers\Mysql;
+use EzSession\Drivers\Redis;
+use EzSession\Drivers\JWTHandler;
+use EzSession\Config;
 
 use Ramsey\Uuid\Uuid;
 
@@ -17,34 +23,14 @@ class SessionHandler {
     private $sessionId = '';
     private $data = '';
 
-
     public function __construct(Config $config) {
         $this->config = $config;
-    }
-
-    public function start($data = []) {
-        // Example of using MySQL config
-        $mysqlConfig = $this->config->get('mysql');
-        $redisConfig = $this->config->get('redis');
-        
-        // return $this->set_persistent();
-        // return $this->mysql_connection();
-        // return $this->redis_connection();
-        // return $this->set_jwt($data);
-        // return $this->get_jwt();
-
-        // return $_SERVER['HTTP_AUTHORIZATION'];
-        
-        
-        // Connect to MySQL, Redis, or use JWT with provided settings
-        // You can initialize your connections here...
     }
 
     public function init()
 	{
 		ini_set('session.serialize_handler', 'php_serialize');
 
-		// $sessionHandler = new SessionHandler($this->config);
 		$token = $this->getTOKEN();
 		$jwtData = $this->reviewToken($token);
 
@@ -302,7 +288,7 @@ class SessionHandler {
             return [];
         }
 
-        $jwt = new JwtHandler($jwtConfig);
+        $jwt = new JWTHandler($jwtConfig);
 
         return $jwt->get($token);
     }
@@ -310,7 +296,7 @@ class SessionHandler {
     public function set_jwt(Array $data = []) {
         $jwtConfig = $this->config->get('jwt');
 
-        $jwt = new JwtHandler($jwtConfig);
+        $jwt = new JWTHandler($jwtConfig);
 
         if (empty($this->tokenData)) {
             $this->reviewToken($data['token'] ?? '');

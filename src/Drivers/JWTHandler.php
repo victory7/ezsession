@@ -1,12 +1,13 @@
 <?php
-namespace EzSession;
+
+namespace EzSession\Drivers;
 
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 use DateTime;
 use Exception;
 
-class JwtHandler {
+class JWTHandler {
     private $secret = '';
     private $algorithm = 'HS256';
 

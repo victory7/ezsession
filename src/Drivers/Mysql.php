@@ -1,7 +1,5 @@
 <?php
-namespace EzSession;
-
-require_once __DIR__ . '/../functions.php';
+namespace EzSession\Drivers;
 
 use DateTime;
 use PDO;
