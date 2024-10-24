@@ -1,5 +1,4 @@
 <?php
-
 namespace EzSession\Drivers;
 
 use Firebase\JWT\JWT;

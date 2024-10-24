@@ -1,12 +1,6 @@
 <?php
 namespace EzSession;
 
-// require __DIR__ . '/../vendor/autoload.php';
-// require __DIR__ . '/drivers/mysql.php';
-// require __DIR__ . '/drivers/redis.php';
-// require __DIR__ . '/drivers/jwt.php';
-// require_once __DIR__ . '/functions.php';
-
 use EzSession\Drivers\Mysql;
 use EzSession\Drivers\Redis;
 use EzSession\Drivers\JWTHandler;
@@ -31,6 +25,7 @@ class SessionHandler {
 	{
 		ini_set('session.serialize_handler', 'php_serialize');
 
+		// $sessionHandler = new SessionHandler($this->config);
 		$token = $this->getTOKEN();
 		$jwtData = $this->reviewToken($token);
 

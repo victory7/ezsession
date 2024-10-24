@@ -1,8 +1,6 @@
 <?php
 namespace EzSession\Drivers;
 
-require_once __DIR__ . '/../functions.php';
-
 use Predis\Client;
 
 class Redis {

@@ -19,7 +19,7 @@ class Session_Ezsession_driver implements SessionHandlerInterface {
         }
         
 		$this->config  = new Config($data);
-    	$this->handler = new SessionHandler($this->config);
+    $this->handler = new SessionHandler($this->config);
 
 		$this->handler->init($this);
 
