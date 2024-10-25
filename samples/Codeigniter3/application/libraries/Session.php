@@ -19,7 +19,7 @@ class Session_Ezsession_driver implements SessionHandlerInterface {
         }
         
 		$this->config  = new Config($data);
-    $this->handler = new SessionHandler($this->config);
+        $this->handler = new SessionHandler($this->config);
 
 		$this->handler->init($this);
 
@@ -28,7 +28,7 @@ class Session_Ezsession_driver implements SessionHandlerInterface {
 
 	public function open($savePath, $sessionName)
     {
-		return true;
+        return true;
     }	
 
     public function close()
@@ -45,21 +45,21 @@ class Session_Ezsession_driver implements SessionHandlerInterface {
 
     public function write($token, $data)
     {
-		$this->handler->write(['token' => $token, 'data' => $data]);
+        $this->handler->write(['token' => $token, 'data' => $data]);
 
 		return true;
     }
 
     public function destroy($token)
     {
-		$this->handler->destroy(['token' => $token]);
+        $this->handler->destroy(['token' => $token]);
 
         return true;
     }
 
     public function gc($maxLifetime)
     {
-		$this->handler->gc(['token' => $sessionId]);
+        $this->handler->gc(['maxLifetime' => $maxLifetime]);
 
         return true;
     }

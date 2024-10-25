@@ -4,6 +4,7 @@ namespace EzSession\Drivers;
 use DateTime;
 use PDO;
 use PDOException;
+use function getUserIp;
 
 class Mysql {
     private $host = '127.0.0.1';
@@ -17,7 +18,6 @@ class Mysql {
     private $conn = '';
 
     public function __construct(array $config = []) {
-        
         $this->host = $config['host'];
         $this->port = $config['port'];
         $this->user = $config['user'];
@@ -144,6 +144,26 @@ class Mysql {
             $sql = "DELETE FROM $this->tbl WHERE session_id = :session_id";
             $stmt = $this->conn->prepare($sql);
             $stmt->execute(['session_id' => $sessionID]);
+
+            // Get the number of affected rows
+            $affectedRows = $stmt->rowCount();
+            return $affectedRows > 0;
+
+        } catch (PDOException $e) {
+            $errCode = $e->getCode();
+            
+            throw new PDOException($e->getMessage(), (int)$e->getCode());
+            
+        }
+    }
+
+    public function delete_olds(array $data = []) {
+        $maxLifeTime = $data['maxLifeTime'];
+
+        try {
+            $sql = "DELETE FROM $this->tbl WHERE created_at < (now() - interval :maxLifeTime second)";
+            $stmt = $this->conn->prepare($sql);
+            $stmt->execute(['maxLifeTime' => $maxLifeTime]);
 
             // Get the number of affected rows
             $affectedRows = $stmt->rowCount();

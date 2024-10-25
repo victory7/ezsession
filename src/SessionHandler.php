@@ -10,23 +10,20 @@ use Ramsey\Uuid\Uuid;
 
 class SessionHandler {
     private $config;
-    private $cookieName = 'SESSIONTOKEN';
-    private $tokenData = [];
+    private $tokenData      = [];
     private $dirtyTokenData = [];
-    private $sessionData = '';
-    private $sessionId = '';
-    private $data = '';
+    private $data           = '';
 
     public function __construct(Config $config) {
         $this->config = $config;
+        $this->gc(['maxLifeTime' => 7200]);
     }
 
     public function init()
 	{
 		ini_set('session.serialize_handler', 'php_serialize');
 
-		// $sessionHandler = new SessionHandler($this->config);
-		$token = $this->getTOKEN();
+		$token   = $this->getTOKEN();
 		$jwtData = $this->reviewToken($token);
 
 		$cookieConfig = $this->config->get('cookie');
@@ -59,8 +56,6 @@ class SessionHandler {
     }
 
     public function reviewToken($token = '') {
-        // echo "<br>review token<br>";
-
         $tokenData = $this->get_jwt($token);
 
         $this->tokenData = $tokenData;
@@ -126,8 +121,6 @@ class SessionHandler {
 	}
 
     public function read($data = []) {
-        // echo "<br>read<br>";
-
         if (empty($this->tokenData)) {
             $this->reviewToken($data['token']);
         }
@@ -160,8 +153,6 @@ class SessionHandler {
     }
 
     public function write($data = []) {
-        // echo "<br>write<br>";
-        
         $tokenData = $this->reviewToken($data['token']);
         $dataToSave = $data['data'];
 
@@ -170,11 +161,6 @@ class SessionHandler {
         if (empty($tokenData)) {
             return true;
         }
-
-        // print_r($this->data);
-        // print_r($dataToSave);
-        // return;
-
         
         // No need to save if data is same
         if (empty($this->tokenData['stored']) && $dataToSave == $this->data) {
@@ -184,12 +170,6 @@ class SessionHandler {
         
         $dataToSave = $this->dateManipulate_saveToJWT($dataToSave);
         
-        // echo "write new";
-        // echo "write";
-        // print_r($dataToSave);
-        // print_r($this->dirtyTokenData);
-        // print_r($this->data);
-        // return;
         if ($this->data !== $dataToSave) {
             $this->data = $dataToSave;
 
@@ -222,16 +202,13 @@ class SessionHandler {
             $this->dirtyTokenData = [];
 
             if ($this->tokenData['stored'] === false && empty($this->data)) {
-                $this->gc();
+                $this->clearDB();
             }
         }
     }
 
     function dateManipulate_saveToJWT($data) {
-        
         $dataToSaveDecoded = unserialize($data);
-
-        // print_r($dataToSaveDecoded);
 
         // Save To JWT
         if (!empty($dataToSaveDecoded['save->jwt'])) {
@@ -254,20 +231,26 @@ class SessionHandler {
             $this->reviewToken($data['token']);
         }
 
-        $this->delete_from_cache();
-        $this->delete_from_db();
+        $this->clearDB($data);
 
         $this->deleteSessionCookie();
 
         return true;
     }
 
-    public function gc($data = []) {
+    public function clearDB($data = []) {
         if (empty($this->tokenData)) {
             $this->reviewToken($data['token']);
         }
 
         $this->delete_from_cache();
+        $this->delete_from_db();
+
+        return true;
+    }
+
+    public function gc($data = []) {
+        $this->delete_olds_from_db($data);
 
         return true;
     }
@@ -331,20 +314,8 @@ class SessionHandler {
     }
 
     public function get_from_db(Array $data = []) {
-        // echo "<br>get from db<br>";
-
         $mysqlConfig = $this->config->get('mysql');
         $mysql = new Mysql($mysqlConfig);
-        
-        // $sessionToken = $data['session'];
-        // $tokenData = $this->reviewToken($sessionToken);
-        
-        // if (empty($tokenData)) {
-        //     return '';
-        // }
-
-        // $sessionId = $tokenData['session'];
-        // unset($data['session']);
 
         $res = $mysql->get(['session_id' => $this->tokenData['session']]);
 
@@ -358,20 +329,9 @@ class SessionHandler {
     }
 
     public function save_to_db(Array $data = []) {
-        // echo "<br>set to db<br>";
-
         $mysqlConfig = $this->config->get('mysql');
         $mysql = new Mysql($mysqlConfig);
         
-        // $sessionToken = $data['session'];
-        // $tokenData = $this->reviewToken($sessionToken);
-        
-        // if (empty($tokenData)) {
-        //     return '';
-        // }
-
-        // $sessionId = $tokenData['session'];
-
         $data = base64_encode($data['data']);
         $res = $mysql->update(['session_id' => $this->tokenData['session'], 'data' => $data]);
 
@@ -382,32 +342,25 @@ class SessionHandler {
         $mysqlConfig = $this->config->get('mysql');
         $mysql = new Mysql($mysqlConfig);
 
-        // $sessionToken = $data['session'];
-        // $tokenData = $this->reviewToken($sessionToken);
-        
-        // if (empty($tokenData)) {
-        //     return '';
-        // }
-
-        // $sessionId = $tokenData['session'];
-
         $res = $mysql->delete(['session_id' => $this->tokenData['session']]);
 
         return true;
     }
 
-    private function get_from_cache(Array $data = []) {
-        // echo "<br>get from cache<br>";
+    public function delete_olds_from_db(Array $data = []) {
+        $mysqlConfig = $this->config->get('mysql');
+        $mysql = new Mysql($mysqlConfig);
+        
+        $maxLifeTime = $data['maxLifeTime'];
 
+        $res = $mysql->delete_olds(['maxLifeTime' => $maxLifeTime]);
+
+        return true;
+    }
+
+    private function get_from_cache(Array $data = []) {
         $redisConfig = $this->config->get('redis');
         $redis = new Redis($redisConfig);
-
-        // $sessionToken = $data['session'];
-        // $tokenData = $this->reviewToken($sessionToken);
-        // if (empty($tokenData)) {
-        //     return '';
-        // }
-        // $sessionId = $this->tokenData['session'];
 
         $res = $redis->get($this->tokenData['session']);
 
@@ -417,19 +370,9 @@ class SessionHandler {
     }
 
     public function save_to_cache(Array $data = []) {
-        // echo "<br>save to cache<br>";
-
         $redisConfig = $this->config->get('redis');
         $redis = new Redis($redisConfig);
         
-        // $sessionToken = $data['session'];
-        // $tokenData = $this->reviewToken($sessionToken);
-        
-        // if (empty($tokenData)) {
-        //     return '';
-        // }
-
-        // $sessionId = $this->tokenData['session'];
         $data = $data['data'];
         
         $data = base64_encode($data);
@@ -442,15 +385,6 @@ class SessionHandler {
     public function delete_from_cache() {
         $redisConfig = $this->config->get('redis');
         $redis = new Redis($redisConfig);
-        
-        // $sessionToken = $data['session'];
-        // $tokenData = $this->reviewToken($sessionToken);
-        
-        // if (empty($tokenData)) {
-        //     return '';
-        // }
-
-        // $sessionId = $tokenData['session'];
 
         $result = $redis->delete($this->tokenData['session']);
         
