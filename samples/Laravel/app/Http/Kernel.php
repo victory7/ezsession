@@ -13,7 +13,7 @@ class Kernel extends HttpKernel
      */
     protected $middlewareGroups = [
         'web' => [
-            \App\Extensions\EzSession\EzSessionStartMiddleware::class,
+            \EzSession\Integrations\Laravel\EzSessionStartMiddleware::class,
             // \Illuminate\Session\Middleware\StartSession::class,
         ],
     ];

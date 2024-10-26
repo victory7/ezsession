@@ -2,8 +2,8 @@
 
 namespace App\Providers;
 
-use App\Extensions\EzSession\EzSessionHandler;
-use App\Extensions\EzSession\EzSessionManager;
+use EzSession\Integrations\Laravel\EzSessionHandler;
+use EzSession\Integrations\Laravel\EzSessionManager;
 
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\ServiceProvider;
@@ -37,16 +37,28 @@ class AppServiceProvider extends ServiceProvider
                     'port'     => config('database.connections.mysql.port'),
                     'user'     => config('database.connections.mysql.username'),
                     'password' => config('database.connections.mysql.password'),
-                    'database' => config('database.connections.mysql.database')
+                    'database' => config('database.connections.mysql.database'),
+                    'table'    => config('session.table')
                 ],
                 'redis' => [
-                    'host'     => config('database.redis.default.host'),
-                    'port'     => config('database.redis.default.port'),
-                    'password' => config('database.redis.default.password'),
-                    'database' => config('database.redis.default.database')
+                    'host'      => config('database.redis.default.host'),
+                    'port'      => config('database.redis.default.port'),
+                    'auth'      => config('database.redis.default.password'),
+                    'cacheTime' => 60 // Seconds
                 ],
-                'jwt' => ['secret' => 'LpxqWRVdY9d4n4QMNb2uzjsIfBTLniK1UDIT8NbC']
-            ]);;
+                'jwt' => [
+                    'secret' => config('app.key')
+                ],
+                'cookie' => [
+                    'name'      => config('session.cookie'),
+                    'path'      => config('session.path'),
+                    'domain'    => config('session.domain'),
+                    'secure'    => config('session.secure'),
+                    'httponly'  => config('session.http_only'),
+                    'same_site' => config('session.same_site'),
+                    'expires'   => config('session.lifetime')
+                ]
+            ]);
         });
     }
 }
