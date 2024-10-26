@@ -16,7 +16,6 @@ class SessionHandler {
 
     public function __construct(Config $config) {
         $this->config = $config;
-        $this->gc(['maxLifeTime' => 7200]);
     }
 
     public function init()
