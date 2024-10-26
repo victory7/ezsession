@@ -1,5 +1,5 @@
 <?php
-namespace EzSession\Integerations\Laravel;
+namespace EzSession\Integrations\Laravel;
 
 use Illuminate\Session\Store;
 use SessionHandlerInterface;

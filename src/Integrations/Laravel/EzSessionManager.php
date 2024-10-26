@@ -1,7 +1,7 @@
 <?php
-namespace EzSession\Integerations\Laravel;
+namespace EzSession\Integrations\Laravel;
 
-use EzSession\Integerations\Laravel\EzSessionStore;
+use EzSession\Integrations\Laravel\EzSessionStore;
 use Illuminate\Session\SessionManager;
 
 class EzSessionManager extends SessionManager
@@ -11,5 +11,9 @@ class EzSessionManager extends SessionManager
         $sessionName = $this->config->get('session.cookie');
 
         return new EzSessionStore($sessionName, $handler);
+    }
+
+    public function debug() {
+        echo "hi";
     }
 }
